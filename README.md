@@ -7,6 +7,7 @@ Android Studio project — open the folder itself in Android Studio to run it.
 |---------|----------------|
 | [LoginRegisterBasicTextFieldNoParams](LoginRegisterBasicTextFieldNoParams) | Login and Register screens with `OutlinedTextField`, password toggle, and screen switching without Composable parameters |
 | [LoginRegisterWithBasicTextField](LoginRegisterWithBasicTextField) | Login, Register and Home screens with custom `BasicTextField` inputs, validation, and a `Canvas` wave background |
+| [WeatherApp](WeatherApp) | Weather and 7-day forecast from the Open-Meteo API with Retrofit, `ViewModel`, `StateFlow`, loading / error / retry states, city search and pull-to-refresh |
 
 ## LoginRegisterBasicTextFieldNoParams
 
@@ -25,3 +26,12 @@ Login, Register and Home screens with custom text fields built from `BasicTextFi
 | Login | Register |
 |:-----:|:--------:|
 | <img src="LoginRegisterWithBasicTextField/screenshots/login.png" width="260" alt="Login screen"> | <img src="LoginRegisterWithBasicTextField/screenshots/register.png" width="260" alt="Register screen"> |
+
+## WeatherApp
+
+Current weather and a 7-day forecast for any city, loaded from the free Open-Meteo API.
+[See the project details →](WeatherApp)
+
+| Weather | Search | Error |
+|:-------:|:------:|:-----:|
+| <img src="WeatherApp/screenshots/weather.png" width="220" alt="Weather screen"> | <img src="WeatherApp/screenshots/search.png" width="220" alt="City search"> | <img src="WeatherApp/screenshots/error.png" width="220" alt="Error screen with Retry"> |
