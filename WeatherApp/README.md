@@ -26,7 +26,7 @@ A simple weather app built with Jetpack Compose. It shows the current weather an
 - **ViewModel + StateFlow** - keeping screen data in a ViewModel and exposing it as `StateFlow`
 - **UI states** - a `sealed interface` with `Loading`, `Success` and `Error`
 - **collectAsStateWithLifecycle** - reading a `StateFlow` inside a Composable
-- **LaunchedEffect** - showing a Snackbar when refresh fails
+- **Side effects / LaunchedEffect** - showing a Snackbar when refresh fails (see [Side Effects in Jetpack Compose](#side-effects-in-jetpack-compose))
 - **PullToRefreshBox** - Material 3 pull-to-refresh
 
 ## Open-Meteo API
@@ -139,6 +139,112 @@ Full API docs: [open-meteo.com/en/docs](https://open-meteo.com/en/docs) and
 3. The JSON is turned into DTO classes, and the repository changes them into simple models (`Weather`, `City`, ...).
 4. The ViewModel sets the state to `Success(weather)`, or `Error(message)` if something went wrong.
 5. `WeatherScreen` collects the state and shows the right UI. Pressing **Retry** calls `loadWeather()` again.
+
+## Side Effects in Jetpack Compose
+
+### What is a side effect?
+
+A Composable function has one job: **describe the UI for the current state**.
+"If the weather is loading, show a spinner. If it loaded, show the card."
+
+A **side effect** is anything a Composable does that changes something *outside* of itself, for example:
+
+- showing a Snackbar or a Toast
+- calling an API or a database
+- starting a timer or an animation by hand
+- logging, analytics, registering a listener
+
+### Why do we need special APIs for them?
+
+Compose can call your Composable again (**recompose**) many times, whenever state changes —
+sometimes many times per second. You don't control when or how often.
+
+So if you write a side effect directly in the function body, it runs on **every** recomposition:
+
+```kotlin
+@Composable
+fun WeatherScreen(...) {
+    // WRONG: this would run again on every recomposition
+    // (and it doesn't even compile, because showSnackbar is a suspend function)
+    snackbarHostState.showSnackbar("Couldn't refresh")
+}
+```
+
+Side-effect APIs let you say **when** the code should run, and they clean it up for you
+when the Composable leaves the screen.
+
+### Example from this app: `LaunchedEffect`
+
+When pull-to-refresh fails, the app shows a Snackbar. This is in `ui/screens/WeatherScreen.kt`:
+
+```kotlin
+val snackbarMessage by viewModel.snackbarMessage.collectAsStateWithLifecycle()
+
+LaunchedEffect(snackbarMessage) {          // snackbarMessage is the "key"
+    snackbarMessage?.let { message ->
+        snackbarHostState.showSnackbar(message)   // suspend function - OK inside LaunchedEffect
+        viewModel.snackbarShown()                 // sets the message back to null
+    }
+}
+```
+
+How it works, step by step:
+
+1. The screen appears → `LaunchedEffect` starts a coroutine and runs the block once.
+   The message is `null`, so nothing happens.
+2. The screen recomposes for other reasons (typing, loading...) → the key is the same, so the block does **not** run again.
+3. Refresh fails → the ViewModel sets `snackbarMessage` → the **key changed**, so the block runs again and shows the Snackbar.
+4. `snackbarShown()` sets the message back to `null`, so it won't be shown twice.
+5. If the screen leaves the composition, the coroutine is **cancelled automatically**.
+
+> **Rule of thumb:** `LaunchedEffect(key)` = "run this suspend code when the screen appears,
+> and again every time `key` changes". Use `LaunchedEffect(Unit)` to run it only once.
+
+### Not everything is a side effect
+
+- **Click handlers** (`onClick = { viewModel.searchCity(text) }`) are fine as they are.
+  They run only when the user taps, not during recomposition.
+- **Loading data when the screen opens** is done in the ViewModel's `init` block in this app.
+  The ViewModel survives screen rotation, so the weather is loaded only once.
+  (`LaunchedEffect(Unit)` would run again after every rotation.)
+
+### The common side-effect APIs
+
+| API | When to use it | Small example |
+|-----|----------------|---------------|
+| `LaunchedEffect(key)` | Run **suspend** code when the screen appears or when `key` changes | Show a Snackbar, wait with `delay()`, scroll a list |
+| `rememberCoroutineScope()` | Start a coroutine from a **click or other event** | `onClick = { scope.launch { listState.scrollToItem(0) } }` |
+| `DisposableEffect(key)` | Something that must be **cleaned up** when the screen leaves | Add a listener, remove it in `onDispose { }` |
+| `SideEffect { }` | Run simple, non-suspend code **after every** successful recomposition | Send the current value to a non-Compose object |
+| `rememberUpdatedState(value)` | Use the **latest** value inside a long-running effect without restarting it | A timeout that should call the newest `onTimeout` lambda |
+
+Small examples of the others (not used in this app):
+
+```kotlin
+// rememberCoroutineScope: start a coroutine from a button click
+val scope = rememberCoroutineScope()
+Button(onClick = { scope.launch { snackbarHostState.showSnackbar("Saved") } }) {
+    Text("Save")
+}
+
+// DisposableEffect: add something when the screen appears, remove it when it goes away
+DisposableEffect(lifecycleOwner) {
+    val observer = LifecycleEventObserver { _, event -> /* ... */ }
+    lifecycleOwner.lifecycle.addObserver(observer)
+    onDispose {
+        lifecycleOwner.lifecycle.removeObserver(observer)   // cleanup
+    }
+}
+```
+
+### Quick guide: which one should I use?
+
+- Need to call a **suspend** function because some **state changed**? → `LaunchedEffect`
+- Need to call a **suspend** function because the **user clicked** something? → `rememberCoroutineScope`
+- Need to **clean something up** when the screen goes away? → `DisposableEffect`
+- Just loading data when the screen opens? → do it in the **ViewModel** (like this app)
+
+Official docs: [Side-effects in Compose](https://developer.android.com/develop/ui/compose/side-effects)
 
 ## How to run
 

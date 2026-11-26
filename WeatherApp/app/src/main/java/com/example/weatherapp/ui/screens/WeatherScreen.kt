@@ -68,12 +68,42 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     // Controls the Snackbar (the small message at the bottom of the screen)
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // ---------- Show Snackbar messages ----------
-    // LaunchedEffect runs this block every time snackbarMessage changes.
-    // showSnackbar is a suspend function, so it must be called from a coroutine like this one.
+    // ---------- Show Snackbar messages (a SIDE EFFECT) ----------
+    //
+    // What is a side effect?
+    //   A Composable's job is only to describe the UI: "given this state, show this".
+    //   Anything else it does - showing a Snackbar, calling an API, writing to a
+    //   database, starting a timer - is a "side effect", because it changes
+    //   something outside the Composable.
+    //
+    // Why can't we just call showSnackbar() here directly?
+    //   Compose can run (recompose) this function many times, at any moment,
+    //   for example every time any state on this screen changes.
+    //   If we wrote this directly in the function body:
+    //
+    //       snackbarHostState.showSnackbar(message)   // WRONG - don't do this
+    //
+    //   1. It would not even compile, because showSnackbar is a suspend function.
+    //   2. Even if it did, the Snackbar could be shown again on every recomposition.
+    //
+    // How LaunchedEffect fixes this:
+    //   - LaunchedEffect starts a coroutine, so we can call suspend functions.
+    //   - It runs the block ONCE when the screen first appears...
+    //   - ...and runs it again ONLY when its key (snackbarMessage) changes.
+    //     A normal recomposition with the same key does NOT run it again.
+    //   - If the key changes while the block is still running, the old run is
+    //     cancelled and a new one starts with the new value.
+    //   - When this Composable leaves the screen, the coroutine is cancelled
+    //     automatically, so nothing keeps running in the background.
+    //
+    // The flow in this app:
+    //   refresh fails -> ViewModel sets snackbarMessage -> key changes
+    //   -> this block runs -> Snackbar is shown -> snackbarShown() sets it back to null
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let { message ->
+            // Suspends (waits) here until the Snackbar is gone
             snackbarHostState.showSnackbar(message)
+            // Tell the ViewModel the message was shown, so it isn't shown again
             viewModel.snackbarShown()
         }
     }
@@ -92,6 +122,9 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(8.dp))
 
             // ---------- Search bar ----------
+            // Note: calling viewModel functions inside onClick / onTextChange is fine.
+            // These lambdas run only when the user does something (an event),
+            // not on every recomposition, so they don't need a side-effect API.
             CitySearchBar(
                 text = searchText,
                 onTextChange = { newText ->

@@ -41,6 +41,9 @@ class WeatherViewModel : ViewModel() {
         longitude = -0.1257,
     )
 
+    // Loading the weather is also a side effect (it calls the internet).
+    // We start it here in the ViewModel's init instead of inside a Composable,
+    // so it runs only once - not again when the screen rotates or recomposes.
     init {
         loadWeather()
     }
