@@ -9,6 +9,7 @@ Android Studio project — open the folder itself in Android Studio to run it.
 | [LoginRegisterWithBasicTextField](LoginRegisterWithBasicTextField) | Login, Register and Home screens with custom `BasicTextField` inputs, validation, and a `Canvas` wave background |
 | [WeatherApp](WeatherApp) | Weather and 7-day forecast from the Open-Meteo API with Retrofit, `ViewModel`, `StateFlow`, loading / error / retry states, city search and pull-to-refresh |
 | [ProductListingApp](ProductListingApp) | Product shop with `LazyVerticalGrid`, Navigation Compose with arguments, search / category filter / sort, Coil images, and a cart shared across screens |
+| [ProductExplorerApp](ProductExplorerApp) | Fake Store shop built with Clean Architecture and Hilt: use cases, repositories, DTOs, search / category / sort, detail, cart and checkout |
 
 ## LoginRegisterBasicTextFieldNoParams
 
@@ -45,3 +46,12 @@ A product catalogue from the free Fake Store API, with a detail screen and a sha
 | Products | Sort | Detail | Cart |
 |:--------:|:----:|:------:|:----:|
 | <img src="ProductListingApp/screenshots/products.png" width="200" alt="Product grid"> | <img src="ProductListingApp/screenshots/sort.png" width="200" alt="Sort menu"> | <img src="ProductListingApp/screenshots/detail.png" width="200" alt="Product detail"> | <img src="ProductListingApp/screenshots/cart.png" width="200" alt="Cart"> |
+
+## ProductExplorerApp
+
+The Fake Store shop again, this time with Clean Architecture (data / domain / presentation) and Hilt.
+[See the project details →](ProductExplorerApp)
+
+| Products | Detail | Cart | Checkout |
+|:--------:|:------:|:----:|:--------:|
+| <img src="ProductExplorerApp/screenshots/products.png" width="200" alt="Product grid"> | <img src="ProductExplorerApp/screenshots/detail.png" width="200" alt="Product detail"> | <img src="ProductExplorerApp/screenshots/cart.png" width="200" alt="Cart"> | <img src="ProductExplorerApp/screenshots/checkout.png" width="200" alt="Checkout"> |
