@@ -13,6 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+// LAYER: PRESENTATION (reusable component)
+// Why: this Composable has no ViewModel. It only gets data and click lambdas,
+// so any screen can reuse it and it is easy to preview.
+
 // ============================================================
 // START: CategoryChips
 // A row of chips: "All" + one chip per category.

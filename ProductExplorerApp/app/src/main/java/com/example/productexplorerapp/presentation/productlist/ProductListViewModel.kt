@@ -15,6 +15,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+// LAYER: PRESENTATION (ViewModel)
+// Why: the ViewModel holds the screen data and talks to the use cases and
+// repositories. The Composable only draws what it gets, so it stays simple.
+
 // The ViewModel for the product list screen.
 //
 // @HiltViewModel + @Inject constructor: Hilt creates this ViewModel and

@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// LAYER: DATA (repository implementation)
+// Why: the cart needs one place to live that every screen can share.
+// Right now that place is memory. To keep the cart after the app closes,
+// we would save it with Room or DataStore here, and nothing else would change.
+
 // Keeps the cart in memory (it is empty again when the app is closed).
 //
 // @Singleton: Hilt creates only ONE cart for the whole app.

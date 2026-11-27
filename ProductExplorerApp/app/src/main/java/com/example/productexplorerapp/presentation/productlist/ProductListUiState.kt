@@ -3,6 +3,10 @@ package com.example.productexplorerapp.presentation.productlist
 import com.example.productexplorerapp.domain.model.Product
 import com.example.productexplorerapp.domain.model.SortOption
 
+// LAYER: PRESENTATION (UI state)
+// Why one class? The screen has a single thing to read, so it can never
+// show "loading" and "error" at the same time by mistake.
+
 // Everything the product list screen needs to draw itself, in one object.
 // The screen just reads it; only the ViewModel changes it.
 data class ProductListUiState(

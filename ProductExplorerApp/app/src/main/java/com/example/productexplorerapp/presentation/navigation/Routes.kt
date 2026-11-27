@@ -2,6 +2,10 @@ package com.example.productexplorerapp.presentation.navigation
 
 import kotlinx.serialization.Serializable
 
+// LAYER: PRESENTATION (navigation)
+// Why: routes are classes, so the compiler checks that we pass the right
+// arguments (a wrong type for productId would not even build).
+
 // Every screen has a "route": the address we use to open it.
 // @Serializable lets Navigation Compose save the route (and its arguments).
 

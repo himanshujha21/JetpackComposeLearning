@@ -11,6 +11,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
 
+// LAYER: DI
+// Why: Retrofit is built once, here. Every class that needs ProductApi gets
+// the same ready-made object, and nobody calls Retrofit.Builder() on their own.
+
 // A Hilt module tells Hilt how to create objects it can't create on its own.
 // Retrofit is not our code, so we can't put @Inject on it.
 // Instead we write "@Provides" functions that build these objects.

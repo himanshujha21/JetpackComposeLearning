@@ -9,6 +9,11 @@ import com.example.productexplorerapp.presentation.cart.CheckoutScreen
 import com.example.productexplorerapp.presentation.productdetail.ProductDetailScreen
 import com.example.productexplorerapp.presentation.productlist.ProductListScreen
 
+// LAYER: PRESENTATION (navigation)
+// Why: all the screens and the moves between them are in one file, so it is
+// easy to see how the app flows. Screens only get lambdas like onBackClick,
+// so they don't need to know about the NavController.
+
 // ============================================================
 // START: AppNavigation
 // Sets up all the screens and how we move between them.

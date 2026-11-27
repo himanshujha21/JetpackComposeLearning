@@ -45,6 +45,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.productexplorerapp.presentation.theme.ProductExplorerAppTheme
 import com.example.productexplorerapp.presentation.util.formatPrice
 
+// LAYER: PRESENTATION (screen)
+// Why: the screen gets its ViewModel, reads the state and passes data and
+// clicks down to smaller Composables. No API or business logic lives here.
+
 // The payment options shown on the checkout screen
 private val paymentMethods = listOf("Credit card", "PayPal", "Cash on delivery")
 

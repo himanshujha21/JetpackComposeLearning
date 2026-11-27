@@ -1,5 +1,8 @@
 package com.example.productexplorerapp.domain.model
 
+// LAYER: DOMAIN (model)
+// Why: screens and use cases use this class, so they don't depend on the API format.
+
 // The product the rest of the app works with.
 //
 // This is a "domain model": plain Kotlin, no Retrofit, no JSON annotations.

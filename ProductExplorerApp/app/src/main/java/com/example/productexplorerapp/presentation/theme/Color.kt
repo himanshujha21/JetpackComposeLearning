@@ -2,6 +2,10 @@ package com.example.productexplorerapp.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
+// LAYER: PRESENTATION (theme)
+// Why: colors and styles live in one place, so every screen looks the same
+// and a color change is made only once.
+
 // Teal and mint colors, like the Shopwise design.
 
 // ---------- Light theme ----------

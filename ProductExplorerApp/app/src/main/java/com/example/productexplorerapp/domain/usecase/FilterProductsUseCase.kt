@@ -4,6 +4,10 @@ import com.example.productexplorerapp.domain.model.Product
 import com.example.productexplorerapp.domain.model.SortOption
 import javax.inject.Inject
 
+// LAYER: DOMAIN (use case)
+// Why: this is the real business logic of the app. Keeping it out of the
+// ViewModel means we can test it with plain lists, no Android needed.
+
 // Search, category filter and sorting, all in one place.
 //
 // This is plain Kotlin (no Android, no network), so it is easy to read

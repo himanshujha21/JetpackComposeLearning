@@ -10,6 +10,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+// LAYER: DI
+// Why: this is the only file that knows both the interface and the real class.
+// To swap ProductRepositoryImpl for another class (for example a fake one),
+// we change one line here.
+
 // Connects each interface (domain layer) to its real class (data layer).
 //
 // "When someone asks for a ProductRepository, give them a ProductRepositoryImpl."

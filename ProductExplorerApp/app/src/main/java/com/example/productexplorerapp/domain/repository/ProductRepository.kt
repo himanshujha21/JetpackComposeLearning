@@ -2,6 +2,11 @@ package com.example.productexplorerapp.domain.repository
 
 import com.example.productexplorerapp.domain.model.Product
 
+// LAYER: DOMAIN (repository interface)
+// Why an interface? The domain layer says WHAT it needs, the data layer decides HOW.
+// It also makes testing easy: a test can pass in a fake repository that
+// returns a fixed list, without any network.
+
 // WHAT the app can ask for, not HOW it is done.
 //
 // The domain layer only knows this interface. The real code that calls the

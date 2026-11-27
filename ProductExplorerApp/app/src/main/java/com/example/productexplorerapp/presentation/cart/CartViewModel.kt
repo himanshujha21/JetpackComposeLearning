@@ -7,6 +7,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 
+// LAYER: PRESENTATION (ViewModel)
+// Why: the ViewModel holds the screen data and talks to the use cases and
+// repositories. The Composable only draws what it gets, so it stays simple.
+
 // Used by both the cart screen and the checkout screen.
 //
 // The cart items live in CartRepository (one cart for the whole app),

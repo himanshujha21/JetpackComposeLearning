@@ -40,6 +40,10 @@ import com.example.productexplorerapp.presentation.components.ProductSearchBar
 import com.example.productexplorerapp.presentation.components.SortMenu
 import kotlinx.coroutines.launch
 
+// LAYER: PRESENTATION (screen)
+// Why: the screen gets its ViewModel, reads the state and passes data and
+// clicks down to smaller Composables. No API or business logic lives here.
+
 // ============================================================
 // START: ProductListScreen
 // The first screen: search bar, category chips, sort menu

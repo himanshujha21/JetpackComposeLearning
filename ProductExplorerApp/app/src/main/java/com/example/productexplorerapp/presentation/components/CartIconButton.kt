@@ -9,6 +9,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
+// LAYER: PRESENTATION (reusable component)
+// Why: this Composable has no ViewModel. It only gets data and click lambdas,
+// so any screen can reuse it and it is easy to preview.
+
 // ============================================================
 // START: CartIconButton
 // The cart icon in the top bar, with a small red badge

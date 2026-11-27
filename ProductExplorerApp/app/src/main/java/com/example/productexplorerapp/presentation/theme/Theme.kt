@@ -8,6 +8,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
+// LAYER: PRESENTATION (theme)
+// Why: colors and styles live in one place, so every screen looks the same
+// and a color change is made only once.
+
 // Colors used when the phone is in light mode
 private val LightColorScheme = lightColorScheme(
     primary = Teal,

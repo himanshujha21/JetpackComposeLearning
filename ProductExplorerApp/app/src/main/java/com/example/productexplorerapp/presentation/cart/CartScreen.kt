@@ -49,6 +49,10 @@ import com.example.productexplorerapp.presentation.components.MessageView
 import com.example.productexplorerapp.presentation.theme.ProductExplorerAppTheme
 import com.example.productexplorerapp.presentation.util.formatPrice
 
+// LAYER: PRESENTATION (screen)
+// Why: the screen gets its ViewModel, reads the state and passes data and
+// clicks down to smaller Composables. No API or business logic lives here.
+
 // ============================================================
 // START: CartScreen
 // "My cart": the list of items with + / - buttons,

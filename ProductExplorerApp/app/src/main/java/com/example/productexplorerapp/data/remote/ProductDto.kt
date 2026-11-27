@@ -2,6 +2,10 @@ package com.example.productexplorerapp.data.remote
 
 import kotlinx.serialization.Serializable
 
+// LAYER: DATA (API model)
+// Why a separate class from Product? The JSON shape belongs to the server, not to us.
+// Keeping it in the data layer means a change in the JSON never reaches the screens.
+
 // DTO = Data Transfer Object: a class that looks EXACTLY like the JSON from the API.
 //
 // One product from https://fakestoreapi.com/products looks like this:

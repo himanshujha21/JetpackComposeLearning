@@ -35,6 +35,10 @@ import com.example.productexplorerapp.domain.model.Product
 import com.example.productexplorerapp.presentation.theme.ProductExplorerAppTheme
 import com.example.productexplorerapp.presentation.util.formatPrice
 
+// LAYER: PRESENTATION (reusable component)
+// Why: this Composable has no ViewModel. It only gets data and click lambdas,
+// so any screen can reuse it and it is easy to preview.
+
 // ============================================================
 // START: ProductCard
 // One product in the grid: image on a mint box, name, price

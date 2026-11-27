@@ -6,6 +6,11 @@ import com.example.productexplorerapp.domain.model.Product
 import com.example.productexplorerapp.domain.repository.ProductRepository
 import javax.inject.Inject
 
+// LAYER: DATA (repository implementation)
+// Why: this class does the real work behind the ProductRepository interface.
+// Use cases and ViewModels only know the interface, so they never touch Retrofit.
+// If we add a local database cache later, it goes in here and no screen changes.
+
 // The real ProductRepository: it gets products from the Fake Store API.
 //
 // If the call fails (no internet, server down) Retrofit throws an exception.

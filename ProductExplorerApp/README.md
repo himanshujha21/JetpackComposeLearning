@@ -1,346 +1,381 @@
 # Product Explorer App
 
-A small shop app built with Jetpack Compose and **Clean Architecture**. It loads products from
-the free [Fake Store API](https://fakestoreapi.com/) (no API key needed). You can search, filter
-by category, sort, open a product, add it to the cart and go through a demo checkout.
-
-The design is based on the teal and mint "Shopwise" e-commerce UI.
+A simple shopping app made with Jetpack Compose. It gets products from the free
+[Fake Store API](https://fakestoreapi.com/), so you don't need an API key. You can
+browse products, search, add things to the cart and try a demo checkout.
 
 ## Screenshots
 
-| Products | Search | Detail | Cart | Checkout |
-|:--------:|:------:|:------:|:----:|:--------:|
-| <img src="screenshots/products.png" width="180" alt="Product grid"> | <img src="screenshots/search.png" width="180" alt="Search results"> | <img src="screenshots/detail.png" width="180" alt="Product detail"> | <img src="screenshots/cart.png" width="180" alt="Cart"> | <img src="screenshots/checkout.png" width="180" alt="Checkout"> |
+### Products
+
+![Product grid](screenshots/products.png)
+
+### Search
+
+![Search results](screenshots/search.png)
+
+### Product Detail
+
+![Product detail](screenshots/detail.png)
+
+### Cart
+
+![Cart](screenshots/cart.png)
+
+### Checkout
+
+![Checkout](screenshots/checkout.png)
 
 ## Features
 
-- Product grid with image, name, price and an add-to-cart button
-- Search by product name while you type
-- Category chips (All, Men's clothing, Jewelery, Electronics, Women's clothing)
-- Sorting: default, price low to high, price high to low, top rated, name A to Z
-- Product detail screen (loaded by id with `GET /products/{id}`)
-- Cart with + / − buttons, delete button, item count and total
-- Checkout with payment method choice and an "Order placed" dialog (demo, no real payment)
-- Cart badge in the top bar
-- Loading, error (with Retry) and "no products found" states
+- Browse products in a grid
+- Search products by name
+- Filter products by category
+- Sort by price, rating or name
+- See product details
+- Add items to the cart and change the quantity
+- Demo checkout (no real payment)
+- Cart badge that shows the item count
+- Loading, error and empty screens
 
-## What you will learn
+## Tech Stack
 
-- **Clean Architecture**: the code is split into `data`, `domain` and `presentation` layers
-- **Hilt**: dependency injection with `@HiltAndroidApp`, `@AndroidEntryPoint`, `@HiltViewModel`, `@Inject`, `@Module`, `@Provides` and `@Binds`
-- **Use cases**: `GetProductsUseCase`, `GetProductDetailsUseCase`, `FilterProductsUseCase`
-- **Repository pattern**: an interface in `domain`, the real class in `data`
-- **DTO vs model**: the JSON class (`ProductDto`) is turned into the app's own class (`Product`) by `mapToProduct()`
-- **Retrofit + kotlinx.serialization**: calling a REST API and reading JSON
-- **ViewModel + StateFlow**: one `UiState` data class per screen, read with `collectAsStateWithLifecycle()`
-- **Navigation Compose**: type-safe routes with `@Serializable`, arguments read with `SavedStateHandle.toRoute()`
-- **Coil**: loading images from a URL with `AsyncImage`
-- **Material 3**: `Scaffold`, `TopAppBar`, `FilterChip`, `DropdownMenu`, `BadgedBox`, `Snackbar`, `AlertDialog`, `RadioButton`
-- **State hoisting**: components get their values and send changes back with lambdas
-- **Unit testing**: `FilterProductsUseCaseTest` tests search, filter and sort without a phone
+- Kotlin
+- Jetpack Compose with Material 3
+- Navigation Compose
+- Hilt
+- Retrofit with `kotlinx.serialization`
+- Coil
+- ViewModel and StateFlow
 
-## Clean Architecture in short
+## Project Structure
 
-Clean Architecture splits the app into **layers**. Each layer has one job, and the arrows only
-point **inwards**: the UI knows about the domain, the data layer knows about the domain, but the
-**domain knows about nobody**. It is plain Kotlin.
+The code has three main layers, plus a `di` folder that connects them:
 
 ```
-┌──────────────────────────────┐
-│  presentation                │  Screens (Composables) + ViewModels
-│  "what the user sees"        │
-└──────────────┬───────────────┘
-               │ calls use cases
-               ▼
-┌──────────────────────────────┐
-│  domain                      │  Models, repository INTERFACES, use cases
-│  "what the app does"         │  (plain Kotlin, no Android, no Retrofit)
-└──────────────▲───────────────┘
-               │ implements the interfaces
-┌──────────────┴───────────────┐
-│  data                        │  Retrofit API, DTOs,        
-│  "where the data comes from" │  repository IMPLEMENTATIONS
-└──────────────────────────────┘
+productexplorerapp/
+├── data/            # where the data comes from
+├── domain/          # what the app does
+├── presentation/    # what the user sees
+└── di/              # how everything is connected
 ```
 
-**Why bother?**
+## Clean Architecture
 
-- If you switch from Retrofit to something else, only the `data` layer changes.
-- Business rules (search, filter, sort) are in one place and easy to test.
-- Each file is small and does one thing, so it is easy to find your way around.
+Clean Architecture means splitting the app into layers, where each layer has one job.
+This app has three main layers: **data**, **domain** and **presentation**. Dependency
+injection (the `di` folder) isn't a layer of its own logic. It just connects the three,
+so it has its own section further down.
+The main rule is simple: the inner layer (domain) doesn't know anything about the
+outer layers. It has no Retrofit, no Compose and no Android code.
 
-**Who connects the layers?** Hilt. The ViewModel asks for a `ProductRepository` (an interface).
-`RepositoryModule` tells Hilt "give them a `ProductRepositoryImpl`". The ViewModel never knows
-which class it really got.
-
-## Project structure
-
-```
-com.example.productexplorerapp
-├── ProductExplorerApplication.kt   @HiltAndroidApp, starts Hilt
-├── MainActivity.kt                 @AndroidEntryPoint, sets theme + navigation
-│
-├── data/                           ── DATA LAYER ──
-│   ├── remote/
-│   │   ├── ProductApi.kt           Retrofit endpoints (GET /products, GET /products/{id})
-│   │   └── ProductDto.kt           Classes that match the JSON exactly
-│   └── repository/
-│       ├── ProductRepositoryImpl.kt  Gets products from the API, turns ProductDto into Product
-│       └── CartRepositoryImpl.kt     Keeps the cart in memory (@Singleton)
-│
-├── domain/                         ── DOMAIN LAYER (plain Kotlin) ──
-│   ├── model/
-│   │   ├── Product.kt
-│   │   ├── CartItem.kt
-│   │   └── SortOption.kt
-│   ├── repository/
-│   │   ├── ProductRepository.kt    Interface
-│   │   └── CartRepository.kt       Interface
-│   └── usecase/
-│       ├── GetProductsUseCase.kt
-│       ├── GetProductDetailsUseCase.kt
-│       └── FilterProductsUseCase.kt  Search + category + sort
-│
-├── di/                             ── HILT MODULES ──
-│   ├── NetworkModule.kt            Creates Retrofit and ProductApi
-│   └── RepositoryModule.kt         Interface -> real class
-│
-└── presentation/                   ── PRESENTATION LAYER ──
-    ├── navigation/
-    │   ├── Routes.kt               @Serializable routes
-    │   └── AppNavigation.kt        NavHost with all screens
-    ├── productlist/                Screen + ViewModel + UiState
-    ├── productdetail/              Screen + ViewModel + UiState
-    ├── cart/                       CartScreen, CheckoutScreen, CartViewModel
-    ├── components/                 ProductCard, ProductSearchBar, CategoryChips,
-    │                               SortMenu, CartIconButton, StatusViews
-    ├── theme/                      Teal / mint colors
-    └── util/PriceFormatter.kt      109.95 -> "$109.95"
-```
-
-## How it works
-
-### 1. Loading the products (following one call through all layers)
+Here's how the layers depend on each other:
 
 ```
-ProductListScreen
-   │  hiltViewModel() gives us the ViewModel
-   ▼
-ProductListViewModel.init { loadProducts() }
-   │  getProductsUseCase.getProducts()
-   ▼
-GetProductsUseCase
-   │  productRepository.getProducts()        <- only knows the interface
-   ▼
-ProductRepositoryImpl                        <- Hilt passed in the real class
-   │  productApi.getProducts()               <- Retrofit does GET /products
-   │  .map { mapToProduct(it) }              <- ProductDto -> Product
-   ▼
-back up to the ViewModel, which updates _uiState
-   ▼
-the screen redraws with the products
+presentation  -->  domain  <--  data
+                     ^
+                     |
+                    di (connects them all)
 ```
 
-The API is called in the ViewModel's `init`, not inside a Composable. A Composable can run many
-times (every recomposition), but `init` runs only once, and the ViewModel survives screen rotation.
+- `presentation` uses `domain` to get things done.
+- `data` implements what `domain` asks for.
+- `domain` depends on nothing.
 
-### 2. Search, category filter and sorting
+Why bother?
 
-All products are downloaded once and kept in the ViewModel (`allProducts`). Every time the search
-text, the category chip or the sort option changes, the ViewModel calls `FilterProductsUseCase`
-with the new values and puts the result in `uiState.products`. No new network call is needed.
+- When the API changes, you only change the `data` folder.
+- The business logic can be tested without a phone or the internet.
+- Each file is small and does one thing, so it's easy to find your way around.
 
-### 3. Opening a product (navigation with an argument)
+### Data Layer
 
-Tapping a card calls `navController.navigate(ProductDetailRoute(productId))`.
-`ProductDetailViewModel` gets a `SavedStateHandle` from Hilt and reads the id back:
+The data layer gets the data. Right now it gets everything from the internet.
+
+- `data/remote/ProductApi.kt`: the Retrofit interface with the API calls.
+  This is the **remote data source**.
+- `data/remote/ProductDto.kt`: classes that match the JSON from the API.
+- `data/repository/ProductRepositoryImpl.kt`: calls the API and turns each
+  `ProductDto` into a `Product`.
+- `data/repository/CartRepositoryImpl.kt`: keeps the cart in memory.
+
+There's no local database in this project yet. If you want to keep the cart
+after the app closes, add Room (or DataStore) here. Something like a
+`data/local/CartDao.kt` would be the **local data source**, and `CartRepositoryImpl`
+would read and write through it. No other layer would need to change.
+
+### Domain Layer
+
+The domain layer is the core of the app. It's plain Kotlin.
+
+- `domain/model/`: `Product`, `CartItem` and `SortOption`.
+- `domain/repository/`: the `ProductRepository` and `CartRepository` interfaces.
+- `domain/usecase/`: `GetProductsUseCase`, `GetProductDetailsUseCase` and
+  `FilterProductsUseCase`.
+
+This layer says *what* the app needs (for example "give me all products"),
+but not *how* it's done.
+
+### Presentation Layer
+
+The presentation layer is everything the user sees and touches.
+
+- `productlist/`, `productdetail/`, `cart/`: each screen with its ViewModel and UI state.
+- `components/`: small reusable Composables like `ProductCard`, `ProductSearchBar`,
+  `CategoryChips` and `SortMenu`.
+- `navigation/`: the routes and `AppNavigation`, which moves between screens.
+- `theme/`: colors and the Material theme.
+
+The flow inside this layer:
+
+- The screen shows what's in the UI state.
+- When the user taps something, the screen calls a ViewModel function.
+- The ViewModel calls a use case or repository and updates the UI state.
+- The screen redraws by itself.
+
+## Use Cases
+
+### What is a use case?
+
+A use case is a small class that does one thing the user wants to do.
+In this app:
+
+- `GetProductsUseCase` gets all products.
+- `GetProductDetailsUseCase` gets one product by its id.
+- `FilterProductsUseCase` searches, filters and sorts a list of products.
+
+### Why use them?
+
+- The ViewModel stays small. It just calls the use case instead of doing the work itself.
+- The logic is in one place. If two screens need the same thing, they share the use case.
+- They're easy to test. `FilterProductsUseCase` is plain Kotlin, so the test just passes
+  in a list and checks the result (see `FilterProductsUseCaseTest`).
+
+`GetProductsUseCase` only calls the repository, and that's fine. If you later
+need a rule like "hide products that have no picture", you add it to the use case
+and the ViewModel doesn't change.
+
+### How does it work?
+
+Here's what happens when the product list opens:
+
+1. `ProductListViewModel` calls `getProductsUseCase.getProducts()`.
+2. The use case calls `productRepository.getProducts()`.
+3. Hilt has given it a `ProductRepositoryImpl`, which calls `productApi.getProducts()`.
+4. Retrofit downloads the JSON and turns it into a list of `ProductDto`.
+5. The repository turns each `ProductDto` into a `Product` and returns the list.
+6. The ViewModel puts the products in its UI state, and the screen shows them.
+
+```
+ProductListScreen -> ProductListViewModel -> GetProductsUseCase
+    -> ProductRepository -> ProductRepositoryImpl -> ProductApi -> internet
+```
+
+The search works in a similar way, but without the internet. When you type,
+the ViewModel calls `filterProductsUseCase.filterProducts(...)` with the products
+it already has, and shows the new list.
+
+## Other Parts of Clean Architecture
+
+### Models
+
+Models are simple data classes that hold data.
+
+- **Domain models** (`Product`, `CartItem`) are what the app uses everywhere.
+- **DTOs** (`ProductDto`, `RatingDto`) match the API's JSON exactly.
+
+They're kept apart on purpose. The API sends a nested `rating` object and calls
+the picture `image`. The app's `Product` has flat `rating` and `ratingCount`
+fields and calls the picture `imageUrl`. The repository converts one into the
+other, so if the API changes, only the DTO and the mapper need to change.
+
+### Interfaces
+
+An interface lists functions without writing their code.
 
 ```kotlin
-private val productId: Int = savedStateHandle.toRoute<ProductDetailRoute>().productId
+interface ProductRepository {
+    suspend fun getProducts(): List<Product>
+    suspend fun getProductById(id: Int): Product
+}
 ```
 
-So the screen itself doesn't need to pass the id to the ViewModel.
+The ViewModels and use cases only know this interface. They don't know if the
+products come from the internet, a database or a fake list in a test.
+That's what lets you swap the real code for something else without breaking anything.
 
-### 4. One cart for every screen
+### Repositories
 
-Each screen gets its **own** ViewModel from `hiltViewModel()`. The cart is still the same everywhere,
-because every ViewModel receives the same `CartRepositoryImpl`, which is marked `@Singleton`.
-`cartItems` is a `StateFlow`, so when you add an item on one screen, the badge on the others
-updates by itself.
+A repository is the one place the rest of the app goes to for data.
 
-### 5. UI state
+- The **interface** lives in `domain` (`ProductRepository`).
+- The **implementation** lives in `data` (`ProductRepositoryImpl`).
 
-Each screen has one data class with everything it needs, for example:
+The repository decides where the data comes from. Today `ProductRepositoryImpl`
+always calls the API. Later it could check a local database first and only
+call the API when it has nothing saved. The use cases wouldn't notice the change.
+
+### Data Sources
+
+A data source is the thing that actually gets the data.
+
+- **Remote data source**: something on the internet. Here it's `ProductApi` (Retrofit).
+- **Local data source**: something on the phone, like a Room database or DataStore.
+  This project doesn't have one yet.
+
+The repository uses the data sources. The rest of the app never talks to them directly.
+
+### ViewModels
+
+A ViewModel holds the data for one screen and handles what the user does on it.
+
+- It keeps the screen's data in a `StateFlow` (for example `ProductListUiState`).
+- The screen reads that state with `collectAsStateWithLifecycle()` and redraws when it changes.
+- It survives screen rotation, so the products aren't downloaded again.
+- It calls use cases and repositories. The Composable never does.
+
+Example from `ProductListViewModel`:
 
 ```kotlin
-data class ProductListUiState(
-    val isLoading: Boolean = true,
-    val errorMessage: String? = null,
-    val products: List<Product> = emptyList(),
-    val categories: List<String> = emptyList(),
-    val searchText: String = "",
-    val selectedCategory: String? = null,
-    val sortOption: SortOption = SortOption.DEFAULT,
+fun onSearchTextChange(text: String) {
+    _uiState.value = _uiState.value.copy(searchText = text)
+    updateVisibleProducts() // calls FilterProductsUseCase
+}
+```
+
+The screen just hands `viewModel.onSearchTextChange(text)` to the search bar.
+Neither of them knows how the search works.
+
+## DI Layer (Hilt)
+
+### What is dependency injection?
+
+A class often needs other classes to work. For example, `ProductListViewModel`
+needs `GetProductsUseCase`, which needs a `ProductRepository`, which needs a `ProductApi`,
+which needs Retrofit.
+
+Without DI, you'd build that whole chain by hand:
+
+```kotlin
+val json = Json { ignoreUnknownKeys = true }
+val retrofit = Retrofit.Builder()
+    .baseUrl("https://fakestoreapi.com/")
+    .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+    .build()
+val api = retrofit.create(ProductApi::class.java)
+val repository = ProductRepositoryImpl(api)
+val useCase = GetProductsUseCase(repository)
+```
+
+With Hilt, each class just asks for what it needs in its constructor,
+and Hilt builds and passes it in:
+
+```kotlin
+class GetProductsUseCase @Inject constructor(
+    private val productRepository: ProductRepository,
 )
 ```
 
-The screen picks what to show with a simple `when`: loading spinner, error with Retry,
-"No products found", or the grid.
+### Files in the DI layer
 
-### 6. Side effects (Snackbar)
+- `ProductExplorerApplication.kt`: has `@HiltAndroidApp`, which starts Hilt.
+- `di/NetworkModule.kt`: tells Hilt how to build Retrofit and `ProductApi`.
+- `di/RepositoryModule.kt`: tells Hilt which real class goes with each interface.
 
-`showSnackbar()` is a suspend function, so it needs a coroutine. Inside a click we can't use
-`LaunchedEffect`, so we use `rememberCoroutineScope()`:
+### How Hilt modules provide dependencies
 
-```kotlin
-val scope = rememberCoroutineScope()
-...
-onAddToCartClick = { product ->
-    viewModel.addToCart(product)
-    scope.launch { snackbarHostState.showSnackbar("Added to cart") }
-}
-```
+Hilt can build your own classes on its own if they have `@Inject constructor`.
+It needs help in two cases, and that's what modules are for.
 
-## Hilt in 5 steps
-
-1. **Start Hilt**: `@HiltAndroidApp` on `ProductExplorerApplication` (and register it in `AndroidManifest.xml`).
-2. **Allow injection in the Activity**: `@AndroidEntryPoint` on `MainActivity`.
-3. **Classes you own**: add `@Inject constructor(...)`. Hilt sees what they need and creates them
-   (use cases, `ProductRepositoryImpl`, `CartRepositoryImpl`).
-4. **Classes you don't own or interfaces**: write a module.
-   - `@Provides` builds an object (Retrofit, `ProductApi`).
-   - `@Binds` says which class to use for an interface (`ProductRepository` -> `ProductRepositoryImpl`).
-5. **ViewModels**: `@HiltViewModel` + `@Inject constructor`, and in the screen use `hiltViewModel()`.
-
-## The API
-
-| What | Request |
-|------|---------|
-| All products | `GET https://fakestoreapi.com/products` |
-| One product | `GET https://fakestoreapi.com/products/{id}` |
-
-One product looks like this:
-
-```json
-{
-  "id": 1,
-  "title": "Fjallraven - Foldsack No. 1 Backpack, Fits 15 Laptops",
-  "price": 109.95,
-  "description": "Your perfect pack for everyday use...",
-  "category": "men's clothing",
-  "image": "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg",
-  "rating": { "rate": 3.9, "count": 120 }
-}
-```
-
-The categories for the chips come from the products themselves (`map { it.category }.distinct()`),
-so only one network call is needed for the list screen.
-
-## How to read the code
-
-### The comments
-
-Every Composable starts and ends with a banner, and each part of the UI inside it has a short
-section comment:
+**1. Classes you didn't write, like Retrofit.** You can't add `@Inject` to them,
+so you write a `@Provides` function that builds the object:
 
 ```kotlin
-// ============================================================
-// START: ProductCard
-// One product in the grid: image, name, price and a cart button.
-// ============================================================
-@Composable
-fun ProductCard(...) {
-    Column {
-        // ---------- Product image ----------
-        AsyncImage(...)
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
 
-        // ---------- Product name ----------
-        Text(...)
+    @Provides
+    @Singleton
+    fun provideRetrofit(): Retrofit {
+        val json = Json { ignoreUnknownKeys = true }
 
-        // ---------- Price + add to cart button ----------
-        Row { ... }
+        return Retrofit.Builder()
+            .baseUrl("https://fakestoreapi.com/")
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductApi(retrofit: Retrofit): ProductApi {
+        return retrofit.create(ProductApi::class.java)
     }
 }
-// ============================================================
-// END: ProductCard
-// ============================================================
 ```
 
-- `// START:` / `// END:` = where a Composable begins and ends.
-- `// ---------- Name ----------` = one piece of the UI inside it.
-- Parts of a screen that have their own job are split into small Composables (`ProductGrid`,
-  `ProductDetailContent`, `CartItemRow`, `CartSummary`, `PaymentBar`...), each with its own START/END.
-- Screens get the ViewModel, but the smaller Composables only get data and lambdas. That makes
-  them easy to reuse and to show in `@Preview`.
+`provideProductApi` needs a `Retrofit`, so Hilt calls `provideRetrofit()` first
+and passes the result in.
 
-### How the screens are built
+**2. Interfaces.** Hilt can't build an interface, so you tell it which class to use
+with `@Binds`:
 
-Bigger Composables are made by putting smaller ones inside each other:
+```kotlin
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class RepositoryModule {
 
-```
-ProductListScreen                     <- a whole screen
- └── Scaffold
-      ├── TopAppBar
-      │    └── CartIconButton         <- our own small component
-      └── Column
-           ├── ProductSearchBar
-           ├── CategoryChips
-           │    └── CategoryChip
-           ├── Row ("PRODUCTS" + SortMenu)
-           └── ProductGrid            (or LoadingView / ErrorView / MessageView)
-                └── ProductCard
-
-ProductDetailScreen
- └── Scaffold
-      ├── TopAppBar (back + CartIconButton)
-      ├── ProductDetailContent
-      └── AddToCartBar                <- bottomBar
-
-CartScreen
- └── Scaffold
-      ├── LazyColumn
-      │    └── CartItemRow
-      └── CartSummary                 <- bottomBar
-
-CheckoutScreen
- └── Scaffold
-      ├── SavedCard
-      ├── PaymentMethodRow (x3)
-      ├── order summary rows
-      ├── PaymentBar                  <- bottomBar
-      └── AlertDialog ("Order placed")
+    @Binds
+    @Singleton
+    abstract fun bindProductRepository(impl: ProductRepositoryImpl): ProductRepository
+}
 ```
 
-### Compose basics used in this project
+This reads as: "when someone asks for a `ProductRepository`, give them a `ProductRepositoryImpl`."
 
-| Concept | What it means | Where to look |
-|---------|---------------|---------------|
-| `@Composable` | A function that draws part of the screen | every file in `presentation/` |
-| `Column` / `Row` / `Box` | Put children under each other / next to each other / on top of each other | `ProductCard`, `CartItemRow` |
-| `Modifier` | Changes size, padding, background, clicks... Order matters: `padding` then `background` is different from `background` then `padding` | `ProductCard` |
-| `Scaffold` | Ready-made screen layout with top bar, bottom bar and snackbar slots | all screens |
-| `LazyVerticalGrid` / `LazyColumn` / `LazyRow` | Scrolling lists that only create the items you can see | `ProductGrid`, `CartScreen`, `CategoryChips` |
-| `remember { mutableStateOf() }` | Keeps a value while the Composable redraws, and redraws when it changes | `SortMenu` (is the menu open?) |
-| `rememberSaveable` | Like `remember`, but also survives screen rotation | `CheckoutScreen` |
-| Recomposition | Compose runs a Composable again when the state it reads changes | `collectAsStateWithLifecycle()` in the screens |
-| State hoisting | A component gets its value from outside and reports changes with a lambda | `ProductSearchBar` |
-| `@Preview` | Shows a Composable in Android Studio without running the app | the `...Preview` functions |
+### Other Hilt annotations used here
 
-## Libraries
+- `@InstallIn(SingletonComponent::class)`: the objects from this module live as long as the app.
+- `@Singleton`: only one object is made for the whole app. That's why every screen sees the same cart.
+- `@AndroidEntryPoint` on `MainActivity`: lets the screens inside it get ViewModels from Hilt.
+- `@HiltViewModel` on a ViewModel and `hiltViewModel()` in the screen: Hilt creates the
+  ViewModel and passes in its use cases and repositories.
 
-| Library | Used for |
-|---------|----------|
-| Jetpack Compose + Material 3 | UI |
-| Navigation Compose | Moving between screens |
-| Hilt (+ KSP) | Dependency injection |
-| hilt-lifecycle-viewmodel-compose | `hiltViewModel()` |
-| Retrofit + kotlinx.serialization | Network calls and JSON |
-| Coil 3 | Loading images |
-| lifecycle-runtime-compose | `collectAsStateWithLifecycle()` |
+## How It All Works Together
 
-## How to run
+Here's the full path when you tap the cart button on a product card:
+
+1. `ProductCard` calls its `onAddToCartClick` lambda.
+2. `ProductListScreen` passes that click to `viewModel.addToCart(product)`.
+3. `ProductListViewModel` calls `cartRepository.addToCart(product)`.
+4. Hilt gave the ViewModel the single `CartRepositoryImpl`, which adds the item
+   to its `StateFlow`.
+5. Every screen that collects `cartItems` sees the new list, so the cart badge
+   updates everywhere.
+
+Each piece only knows the piece right next to it. The card doesn't know about
+the ViewModel, and the ViewModel doesn't know how the cart is stored.
+
+## Good to Know
+
+- The product list is loaded once when the app opens.
+- Search, filter and sort work on that list, so no extra API calls are made.
+- The cart is shared by all screens because the cart repository is a singleton.
+- The detail screen gets the product id from the navigation route.
+
+## API
+
+- `GET https://fakestoreapi.com/products` returns all products.
+- `GET https://fakestoreapi.com/products/{id}` returns one product.
+
+## How to Run
 
 1. Open the `ProductExplorerApp` folder in Android Studio.
-2. Wait for Gradle sync.
-3. Run on an emulator or phone with internet.
-4. To run the unit tests: right-click `FilterProductsUseCaseTest` → **Run**.
+2. Wait for Gradle sync to finish.
+3. Run the app on an emulator or a phone with internet access.
+
+To run the tests, right-click `FilterProductsUseCaseTest` and click **Run**, or use this command:
+
+```
+./gradlew test
+```

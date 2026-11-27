@@ -15,6 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
+// LAYER: PRESENTATION (reusable component)
+// Why: this Composable has no ViewModel. It only gets data and click lambdas,
+// so any screen can reuse it and it is easy to preview.
+
 // ============================================================
 // START: LoadingView
 // A spinner in the middle of the screen while data is loading.

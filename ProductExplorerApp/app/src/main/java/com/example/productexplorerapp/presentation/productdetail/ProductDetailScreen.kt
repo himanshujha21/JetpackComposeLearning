@@ -52,6 +52,10 @@ import com.example.productexplorerapp.presentation.theme.ProductExplorerAppTheme
 import com.example.productexplorerapp.presentation.util.formatPrice
 import kotlinx.coroutines.launch
 
+// LAYER: PRESENTATION (screen)
+// Why: the screen gets its ViewModel, reads the state and passes data and
+// clicks down to smaller Composables. No API or business logic lives here.
+
 // ============================================================
 // START: ProductDetailScreen
 // Shows one product: big image, name, rating, price and description,

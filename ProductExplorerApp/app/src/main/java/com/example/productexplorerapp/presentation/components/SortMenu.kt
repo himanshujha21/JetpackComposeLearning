@@ -15,6 +15,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.productexplorerapp.domain.model.SortOption
 
+// LAYER: PRESENTATION (reusable component)
+// Why: this Composable has no ViewModel. It only gets data and click lambdas,
+// so any screen can reuse it and it is easy to preview.
+
 // ============================================================
 // START: SortMenu
 // A button that shows the current sort option.
